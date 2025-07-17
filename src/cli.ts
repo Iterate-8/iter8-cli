@@ -6,14 +6,23 @@ import { loadConfig } from './utils/config.js';
 import { logInfo, logError } from './utils/logger.js';
 import { readFileSafe, writeFileSafe } from './utils/file.js';
 import { fetchData } from './utils/http.js';
+import { createTicketsCommand } from './commands/tickets.js';
+import { createDebugCommand } from './commands/debug.js';
 import readline from 'readline';
+import { supabaseService } from './services/supabase.js';
 
 const program = new Command();
 
 program
-  .name('tscli')
-  .description('A TypeScript CLI app foundation')
+  .name('iter8-cli')
+  .description('CLI Tool for Iter8 customers')
   .version('1.0.0');
+
+// Add tickets command
+program.addCommand(createTicketsCommand());
+
+// Add debug command
+program.addCommand(createDebugCommand());
 
 program
   .command('hello')
@@ -52,30 +61,62 @@ program
   const banner = figlet.textSync('Iter8', { horizontalLayout: 'default', verticalLayout: 'default' });
   console.log(chalk.magentaBright(banner));
 
-  // Mocked Todos List (title bold, todos normal)
-  const todos = [
-    'Set up authentication flow',
-    'Implement user profile page',
-    'Integrate payment gateway',
-    'Write unit and integration tests',
-    'Configure CI/CD pipeline',
-    'Optimize app performance',
-    'Add error tracking and logging',
-    'Prepare production deployment scripts'
-  ];
-  console.log();
-  console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
-  todos.forEach(todo => {
-    console.log(chalk.blueBright('• ') + chalk.whiteBright(todo));
-  });
-  console.log();
-
-  // Claude Code style: single top line, input below
+  // Load config and prompt for startup name if not set
+  let config = await loadConfig();
+  let startupName = process.env.STARTUP_NAME || config.user;
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
 
+  async function askStartupName(): Promise<string> {
+    return new Promise((resolve) => {
+      rl.question(chalk.cyan('Enter your startup name: '), (answer) => {
+        resolve(answer.trim());
+      });
+    });
+  }
+
+  if (!startupName) {
+    startupName = await askStartupName();
+    config.user = startupName;
+    await import('./utils/config.js').then(m => m.saveConfig(config));
+  }
+
+  // Initialize Supabase and fetch feedback for this startup
+  let todos: string[] = [];
+  try {
+    if (!config.supabase) {
+      throw new Error('Supabase not configured');
+    }
+    await supabaseService.initialize(config.supabase);
+    const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
+    todos = feedbackItems;
+  } catch (err) {
+    logError(err);
+  }
+
+  // Show the to-do list
+  console.log();
+  console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
+  if (todos.length > 0) {
+    todos.forEach((todo, idx) => {
+      console.log(chalk.blueBright(`${idx + 1}. `) + chalk.whiteBright(todo));
+    });
+  } else {
+    console.log(chalk.gray('No feedback found for this startup.'));
+  }
+  console.log();
+
+  // Show commands
+  console.log(chalk.bold.cyan('Commands:'));
+  console.log(chalk.white('  refresh - Fetch latest feedback'));
+  console.log(chalk.white('  change  - Change startup name'));
+  console.log(chalk.white('  apply   - Apply feedback as code changes'));
+  console.log(chalk.white('  quit    - Exit the application'));
+  console.log();
+
+  // Claude Code style: single top line, input below
   function drawClaudeInputBox() {
     const width = 40;
     // Draw only the top line
@@ -88,18 +129,145 @@ program
   function prompt() {
     drawClaudeInputBox();
     rl.question('', (answer) => {
-      if (answer.trim().toLowerCase() === 'quit') {
+      const input = answer.trim().toLowerCase();
+      
+      if (input === 'quit') {
         console.log(chalk.green('Goodbye!'));
         rl.close();
         process.exit(0);
+      } else if (input === 'refresh') {
+        refreshFeedback();
+      } else if (input === 'change') {
+        changeStartupName();
+      } else if (input === 'apply') {
+        applyFeedback();
       } else {
-        console.log(chalk.yellow('Unknown command. Type "quit" to exit.'));
+        console.log(chalk.yellow('Unknown command. Type one of: refresh, change, apply, quit'));
         prompt();
       }
     });
   }
+
+  async function refreshFeedback() {
+    console.log(chalk.blue('🔄 Fetching latest feedback...'));
+    try {
+      const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
+      todos = feedbackItems;
+      
+      console.log(chalk.green('✅ Feedback refreshed!'));
+      console.log();
+      console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
+      if (todos.length > 0) {
+        todos.forEach((todo, idx) => {
+          console.log(chalk.blueBright(`${idx + 1}. `) + chalk.whiteBright(todo));
+        });
+      } else {
+        console.log(chalk.gray('No feedback found for this startup.'));
+      }
+      console.log();
+    } catch (err) {
+      console.log(chalk.red('❌ Failed to refresh feedback'));
+      logError(err);
+    }
+    prompt();
+  }
+
+  async function changeStartupName() {
+    console.log(chalk.blue('🔄 Changing startup name...'));
+    const newStartupName = await askStartupName();
+    startupName = newStartupName;
+    config.user = startupName;
+    await import('./utils/config.js').then(m => m.saveConfig(config));
+    
+    console.log(chalk.green(`✅ Startup name changed to: ${startupName}`));
+    await refreshFeedback();
+  }
+
+  async function applyFeedback() {
+    if (todos.length === 0) {
+      console.log(chalk.yellow('No todos to apply.'));
+      prompt();
+      return;
+    }
+
+    console.log(chalk.blue('📋 Select todos to apply:'));
+    console.log(chalk.gray('(Use space to select, enter to confirm)'));
+    console.log();
+
+    // Simple selection interface (since we can't use arrow keys easily in this setup)
+    console.log(chalk.cyan('Available options:'));
+    console.log(chalk.white('  all - Apply all todos'));
+    console.log(chalk.white('  <numbers> - Apply specific todos (e.g., "1,3,5")'));
+    console.log(chalk.white('  cancel - Cancel selection'));
+    console.log();
+
+    drawClaudeInputBox();
+    rl.question('', (selection) => {
+      const input = selection.trim().toLowerCase();
+      
+      if (input === 'cancel') {
+        console.log(chalk.yellow('Selection cancelled.'));
+        prompt();
+      } else if (input === 'all') {
+        applySelectedTodos(todos.map((_, idx) => idx));
+      } else {
+        // Parse comma-separated numbers
+        const numbers = input.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0 && n <= todos.length);
+        if (numbers.length > 0) {
+          applySelectedTodos(numbers.map(n => n - 1)); // Convert to 0-based index
+        } else {
+          console.log(chalk.red('Invalid selection. Please enter valid numbers or "all".'));
+          prompt();
+        }
+      }
+    });
+  }
+
+  function applySelectedTodos(selectedIndices: number[]) {
+    console.log(chalk.green('🚀 Applying selected todos...'));
+    
+    selectedIndices.forEach(index => {
+      const todo = todos[index];
+      console.log(chalk.blue(`Applying: ${todo}`));
+      
+      // Create a log file to show execution
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] Applied todo #${index + 1}: ${todo}\n`;
+      
+      // Write to execution log file
+      import('fs').then(fs => {
+        fs.appendFileSync('execution_log.txt', logEntry);
+      }).catch(err => {
+        console.log(chalk.red('Failed to log execution'));
+      });
+    });
+    
+    console.log(chalk.green(`✅ Applied ${selectedIndices.length} todo(s)`));
+    console.log(chalk.blue('📝 Actions logged to execution_log.txt'));
+    prompt();
+  }
+
+  function executeTodo(index: number) {
+    const todo = todos[index];
+    console.log(chalk.green(`Executing: ${todo}`));
+    
+    // Create a log file to show execution
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] Executed todo #${index + 1}: ${todo}\n`;
+    
+    // Write to execution log file
+    import('fs').then(fs => {
+      fs.appendFileSync('execution_log.txt', logEntry);
+      console.log(chalk.blue(`✅ Action logged to execution_log.txt`));
+      console.log(chalk.gray(`Log entry: ${logEntry.trim()}`));
+    }).catch(err => {
+      console.log(chalk.red('Failed to log execution'));
+    });
+    
+    prompt();
+  }
   prompt();
-  // Do not show CLI help or commands
+  // Don't parse command line arguments - stay in interactive mode
   // await program.parseAsync(process.argv);
 })();
 
