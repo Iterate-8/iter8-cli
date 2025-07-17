@@ -1,0 +1,2 @@
+[console_scripts]
+iter8 = iter8_cli.main:main

@@ -1,0 +1,5 @@
+click>=8.0.0
+requests>=2.25.0
+rich>=12.0.0
+pyyaml>=6.0
+keyring>=23.0.0 
