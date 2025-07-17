@@ -1,7 +1,11 @@
 {
-  "name": "tmp",
+  "name": "iter8-cli",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "CLI Tool for Iter8 customers - Get personalized feedback and apply code changes",
+  "main": "dist/cli.js",
+  "bin": {
+    "iter8": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli.ts",
@@ -9,10 +13,9 @@
     "cli": "tsx src/cli.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["cli", "feedback", "startup", "iter8", "productivity"],
+  "author": "Iterate-8",
+  "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "@types/figlet": "^1.7.0",

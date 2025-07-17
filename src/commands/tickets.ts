@@ -107,7 +107,7 @@ export function createTicketsCommand(): Command {
         }
 
         await supabaseService.initialize(config.supabase);
-        const ticket = await supabaseService.getTicketById(parseInt(id));
+        const ticket = await supabaseService.getTicket(parseInt(id));
 
         if (!ticket) {
           spinner.fail(`Ticket ${id} not found`);
@@ -268,7 +268,8 @@ function displayTicketDetails(ticket: Ticket): void {
   }
 }
 
-function getStatusColor(status: string) {
+function getStatusColor(status: string | undefined) {
+  if (!status) return chalk.white;
   switch (status.toLowerCase()) {
     case 'open':
       return chalk.green;

@@ -97,7 +97,7 @@ Make the changes realistic and applicable to a TypeScript/JavaScript project. If
         };
       }
     } catch (error) {
-      logError('Failed to generate code changes:', error);
+      logError(`Failed to generate code changes: ${error}`);
       throw error;
     }
   }

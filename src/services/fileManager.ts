@@ -55,7 +55,8 @@ class FileManagerService {
         await fs.writeFile(backupPath, content);
       }
     } catch (error) {
-      logError(`Failed to create backup for ${filePath}:`, error);
+      logError(`Failed to create backup for ${filePath}: ${error}`);
+      throw error;
     }
   }
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -94,8 +96,10 @@ program
     await supabaseService.initialize(config.supabase);
     await openAIService.initialize();
     await fileManagerService.initialize();
-    const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
-    todos = feedbackItems;
+    if (startupName) {
+      const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
+      todos = feedbackItems;
+    }
   } catch (err) {
     logError(err);
   }
@@ -158,8 +162,10 @@ program
   async function refreshFeedback() {
     console.log(chalk.blue('🔄 Fetching latest feedback...'));
     try {
-      const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
-      todos = feedbackItems;
+      if (startupName) {
+        const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
+        todos = feedbackItems;
+      }
       
       console.log(chalk.green('✅ Feedback refreshed!'));
       console.log();
