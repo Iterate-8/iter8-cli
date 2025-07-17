@@ -3,17 +3,16 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import figlet from 'figlet';
-import { loadConfig } from './utils/config.js';
-import { logInfo, logError } from './utils/logger.js';
-import { readFileSafe, writeFileSafe } from './utils/file.js';
-import { fetchData } from './utils/http.js';
-import { createTicketsCommand } from './commands/tickets.js';
-import { createDebugCommand } from './commands/debug.js';
+import { loadConfig } from './utils/config';
+import { logInfo, logError } from './utils/logger';
+import { readFileSafe, writeFileSafe } from './utils/file';
+import { fetchData } from './utils/http';
+import { createTicketsCommand } from './commands/tickets';
+import { createDebugCommand } from './commands/debug';
 import readline from 'readline';
-import { supabaseService } from './services/supabase.js';
-import { openAIService } from './services/openai.js';
-import { fileManagerService } from './services/fileManager.js';
+import { supabaseService } from './services/supabase';
+import { openAIService } from './services/openai';
+import { fileManagerService } from './services/fileManager';
 
 const program = new Command();
 
@@ -61,9 +60,12 @@ program
   });
 
 (async () => {
-  // Render "Iter8" banner in color
-  const banner = figlet.textSync('Iter8', { horizontalLayout: 'default', verticalLayout: 'default' });
-  console.log(chalk.magentaBright(banner));
+  // Display ASCII banner
+  console.log(chalk.magentaBright(`
+  ╔══════════════════════════════════════╗
+  ║             ITER8 CLI                ║
+  ╚══════════════════════════════════════╝
+  `));
 
   // Load config and prompt for startup name if not set
   let config = await loadConfig();
