@@ -11,8 +11,8 @@ import readline from 'readline';
 const program = new Command();
 
 program
-  .name('tscli')
-  .description('A TypeScript CLI app foundation')
+  .name('iter8-cli')
+  .description('CLI Tool for Iter8 customers')
   .version('1.0.0');
 
 program

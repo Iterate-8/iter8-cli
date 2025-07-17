@@ -12,7 +12,7 @@ import path from 'path';
 const CONFIG_PATH = path.resolve(process.cwd(), 'config.json');
 /**
  * Loads the configuration from config.json, or returns default config if not found.
- * @returns {Promise<{ user?: string }>} The config object
+ * @returns {Promise<{ user?: string; startupName?: string }>} The config object
  */
 export function loadConfig() {
     return __awaiter(this, void 0, void 0, function* () {

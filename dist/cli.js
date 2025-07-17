@@ -17,8 +17,8 @@ import { fetchData } from './utils/http.js';
 import readline from 'readline';
 const program = new Command();
 program
-    .name('tscli')
-    .description('A TypeScript CLI app foundation')
+    .name('iter8-cli')
+    .description('CLI Tool for Iter8 customers')
     .version('1.0.0');
 program
     .command('hello')
@@ -73,24 +73,21 @@ program
         console.log(chalk.blueBright('• ') + chalk.whiteBright(todo));
     });
     console.log();
-    // Prompt for user command with a styled input box
+    // Claude Code style: single top line, input below
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
     });
-    function drawInputBox() {
+    function drawClaudeInputBox() {
         const width = 40;
-        const top = '┌' + '─'.repeat(width) + '┐';
-        const mid = '│' + ' '.repeat(width) + '│';
-        const bot = '└' + '─'.repeat(width) + '┘';
-        console.log(chalk.cyan(top));
-        console.log(chalk.cyan(mid));
-        process.stdout.write(chalk.cyan('│ ') + chalk.whiteBright.bold('Enter a command (type "quit" to exit):').padEnd(width - 1, ' ') + chalk.cyan('│\n'));
-        console.log(chalk.cyan(bot));
-        process.stdout.write(chalk.cyan('> '));
+        // Draw only the top line
+        console.log();
+        process.stdout.write(chalk.cyan('┌' + '─'.repeat(width) + '┐') + '\n');
+        // Input prompt below the line
+        process.stdout.write(chalk.whiteBright('')); // No prefix, just input
     }
     function prompt() {
-        drawInputBox();
+        drawClaudeInputBox();
         rl.question('', (answer) => {
             if (answer.trim().toLowerCase() === 'quit') {
                 console.log(chalk.green('Goodbye!'));
@@ -107,3 +104,4 @@ program
     // Do not show CLI help or commands
     // await program.parseAsync(process.argv);
 }))();
+// If using Ink, entry point should be cli.tsx

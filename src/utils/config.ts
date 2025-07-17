@@ -5,9 +5,9 @@ const CONFIG_PATH = path.resolve(process.cwd(), 'config.json');
 
 /**
  * Loads the configuration from config.json, or returns default config if not found.
- * @returns {Promise<{ user?: string }>} The config object
+ * @returns {Promise<{ user?: string; startupName?: string }>} The config object
  */
-export async function loadConfig(): Promise<{ user?: string }> {
+export async function loadConfig(): Promise<{ user?: string; startupName?: string }> {
   try {
     if (await fs.pathExists(CONFIG_PATH)) {
       return await fs.readJson(CONFIG_PATH);
