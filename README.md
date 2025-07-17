@@ -5,7 +5,7 @@ A command-line interface for getting personalized feedback and applying code cha
 
 ## Features
 
-- 🚀 **Zero Configuration** - Just provide your startup name
+- 🚀 **Zero Configuration** - Just download and run
 - 📋 **Personalized Feedback** - Get feedback specific to your startup
 - 🔄 **Apply Code Changes** - Automatically generate and apply improvements
 - 🎨 **Beautiful Interface** - Modern CLI with colored output
@@ -13,36 +13,54 @@ A command-line interface for getting personalized feedback and applying code cha
 
 ## Installation
 
-### Global Installation (Recommended)
+### Download Pre-built Binary (Recommended)
+Download the appropriate binary for your platform:
+- macOS: `iter8-cli-macos`
+- Linux: `iter8-cli-linux`
+- Windows: `iter8-cli-win.exe`
+
+Make the binary executable (macOS/Linux only):
 ```bash
-npm install -g iter8-cli
+chmod +x iter8-cli-macos  # or iter8-cli-linux
 ```
 
-### From Source
+Run the CLI:
 ```bash
+./iter8-cli-macos  # or ./iter8-cli-linux or iter8-cli-win.exe
+```
+
+### Building from Source
+If you want to build from source, you'll need:
+- Node.js 18+
+- npm
+- `.env` file with required keys:
+  ```
+  SUPABASE_ANON_KEY=your-key
+  OPENAI_API_KEY=your-key
+  ```
+
+Then:
+```bash
+# Clone the repository
 git clone <repository-url>
 cd iter8-cli
+
+# Install dependencies
 npm install
-npm run build
+
+# Build the binaries
+./build.sh
 ```
 
 ## Usage
 
-### Quick Start
+Just run the CLI and follow the prompts:
+
 ```bash
-# Install globally
-npm install -g iter8-cli
-
-# Run the CLI
-iter8
-
-# Enter your startup name when prompted
-# The CLI will fetch your personalized feedback
+./iter8-cli-macos  # or appropriate binary for your platform
 ```
 
-### Interactive Commands
-
-Once you're in the CLI, you can use these commands:
+### Available Commands
 
 - **refresh** - Fetch latest feedback for your startup
 - **change** - Change your startup name
@@ -50,86 +68,36 @@ Once you're in the CLI, you can use these commands:
 - **revert** - Revert applied changes
 - **quit** - Exit the application
 
-### Example Session
-```bash
-$ iter8
+## Architecture
 
-  ___  _____  _____  _____  _____  ___  ___ 
- |_ _||_   _||_   _||_   _||_   _||_ _||_ _|
-  | |  | |    | |    | |    | |   | |  | |  
-  | |  | |    | |    | |    | |   | |  | |  
- |___| |_|    |_|    |_|    |_|   |_|  |_|  
-
-TODOS
-1. Improve user authentication flow
-2. Add better error handling for API calls
-3. Optimize database queries for better performance
-
-Commands:
-  refresh - Fetch latest feedback
-  change  - Change startup name
-  apply   - Apply feedback as code changes
-  revert  - Revert applied changes
-  quit    - Exit the application
-
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ > apply                                                                                              │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-📋 Select todos to apply:
-(Enter numbers separated by commas, or "all" or "cancel")
-
-Available options:
-  1. Improve user authentication flow
-  2. Add better error handling for API calls
-  3. Optimize database queries for better performance
-  all - Apply all todos
-  cancel - Cancel selection
-
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ > 1,2                                                                                               │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-🚀 Generating code changes for selected todos...
-✅ Generated 2 code change(s)
-
-Do you want to apply these changes?
-  accept - Apply all changes
-  review - Review changes first
-  cancel - Cancel application
-```
-
-## How It Works
-
-1. **No Configuration Required** - Iter8 provides the backend infrastructure
-2. **Startup-Specific Feedback** - Get feedback tailored to your startup
-3. **AI-Powered Improvements** - Automatically generate code changes
-4. **Safe Application** - Review and apply changes safely
+- **Supabase Backend** - Stores feedback and startup data
+- **OpenAI Integration** - Powers intelligent code changes
+- **Embedded Configuration** - No setup needed
+- **Safe Code Changes** - Review before applying
 
 ## Development
 
-```bash
-# Run in development mode
-npm run dev
+The project uses:
+- TypeScript for type safety
+- esbuild for bundling
+- pkg for creating standalone binaries
+- Supabase for backend storage
+- OpenAI for AI-powered changes
 
-# Build for production
-npm run build
+### Build Process
 
-# Run production build
-npm start
-```
+The build process:
+1. Embeds all necessary configuration
+2. Bundles the TypeScript code
+3. Creates standalone binaries for all platforms
+4. No runtime configuration needed
 
-## Architecture
+### Adding New Features
 
-- **Supabase Backend** - Provided by Iter8 (no user configuration needed)
-- **OpenAI Integration** - Powered by Iter8's API keys
-- **Personalized Experience** - Based on startup name
-- **Safe Code Changes** - Review before applying
+1. Add new commands in `src/commands/`
+2. Update services in `src/services/`
+3. Run `./build.sh` to create new binaries
 
-## Future Features
+## License
 
-- Execute ticket actions automatically
-- Batch operations
-- Advanced filtering and search
-- Integration with other services
-- Team collaboration features
+MIT

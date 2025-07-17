@@ -1,5 +1,7 @@
-import { Command } from 'commander';
-const program = new Command();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const commander_1 = require("commander");
+const program = new commander_1.Command();
 program
     .name('iter8')
     .description('Iter8 CLI application')
@@ -15,4 +17,4 @@ process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
     process.exit(1);
 });
-export default program;
+exports.default = program;

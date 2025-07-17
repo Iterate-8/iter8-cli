@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import { loadConfig, updateSupabaseConfig, getSupabaseConfig } from '../utils/config.js';
+import { loadConfig, getSupabaseConfig } from '../utils/config.js';
 import { logInfo, logError } from '../utils/logger.js';
 import { supabaseService, Ticket } from '../services/supabase.js';
 
@@ -32,11 +32,6 @@ export function createTicketsCommand(): Command {
           console.log(chalk.blue('Or set SUPABASE_URL and SUPABASE_ANON_KEY in your .env file'));
           return;
         }
-
-        await updateSupabaseConfig({
-          url: options.url,
-          anonKey: options.key
-        });
 
         // Test the connection
         await supabaseService.initialize({

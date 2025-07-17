@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { logError } from '../utils/logger.js';
+import { buildConfig } from '../config/buildConfig.js';
 
 export interface CodeChange {
   filePath: string;
@@ -16,9 +17,9 @@ class OpenAIService {
   private client: OpenAI | null = null;
 
   async initialize(): Promise<void> {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = buildConfig.openai.apiKey;
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY not found in environment variables');
+      throw new Error('OpenAI API key is missing from the binary. This binary was not built correctly.');
     }
 
     this.client = new OpenAI({

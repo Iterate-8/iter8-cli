@@ -1,70 +1,71 @@
 import fs from 'fs-extra';
 import path from 'path';
-import dotenv from 'dotenv';
-import { SupabaseConfig } from '../services/supabase.js';
-
-// Load environment variables
-dotenv.config();
+import { SupabaseConfig } from '../services/supabase';
+import { buildConfig } from '../config/buildConfig';
 
 const CONFIG_PATH = path.resolve(process.cwd(), 'config.json');
 
 export interface Config {
   user?: string;
-  supabase?: SupabaseConfig;
+  supabase: SupabaseConfig; // Remove optional since it's always provided
+  openai: {
+    apiKey: string;
+  };
+  production: boolean;
 }
 
 /**
- * Loads the configuration from environment variables and config.json
+ * Validates that required configuration values are present
+ * @throws {Error} if any required values are missing
+ */
+function validateConfig(config: Config) {
+  if (!config.supabase?.anonKey || config.supabase.anonKey.trim() === '') {
+    throw new Error('Supabase anonymous key is missing from the binary. This binary was not built correctly.');
+  }
+  if (!config.openai?.apiKey || config.openai.apiKey.trim() === '') {
+    throw new Error('OpenAI API key is missing from the binary. This binary was not built correctly.');
+  }
+}
+
+/**
+ * Loads the configuration, using embedded build-time values
  * @returns {Promise<Config>} The config object
  */
 export async function loadConfig(): Promise<Config> {
-  const config: Config = {};
+  // Cast buildConfig to match our Config type since we validate it
+  const config: Config = {
+    supabase: buildConfig.supabase as SupabaseConfig,
+    openai: buildConfig.openai as { apiKey: string },
+    production: buildConfig.production as boolean,
+  };
 
-  // Load from environment variables first
-  if (process.env.USER_NAME) {
-    config.user = process.env.USER_NAME;
-  }
+  // Validate the embedded config values
+  validateConfig(config);
 
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
-    config.supabase = {
-      url: process.env.SUPABASE_URL,
-      anonKey: process.env.SUPABASE_ANON_KEY
-    };
-  }
-
-  // Fallback to config.json if environment variables are not set
-  if (!config.supabase) {
-    try {
-      if (await fs.pathExists(CONFIG_PATH)) {
-        const fileConfig = await fs.readJson(CONFIG_PATH);
-        if (fileConfig.supabase) {
-          config.supabase = fileConfig.supabase;
-        }
-        if (fileConfig.user && !config.user) {
-          config.user = fileConfig.user;
-        }
+  // Load user from config file if it exists
+  try {
+    if (await fs.pathExists(CONFIG_PATH)) {
+      const fileConfig = await fs.readJson(CONFIG_PATH);
+      if (fileConfig.user) {
+        config.user = fileConfig.user;
       }
-    } catch (err) {
-      // Ignore config file errors, use environment variables only
     }
+  } catch (err) {
+    // Ignore config file errors
   }
 
   return config;
 }
 
 /**
- * Saves the configuration to config.json (for non-environment variables)
+ * Saves the user configuration to config.json
  * @param {Config} config The config object
  */
 export async function saveConfig(config: Config): Promise<void> {
   try {
-    // Only save non-environment variable config
     const fileConfig: any = {};
-    if (config.user && !process.env.USER_NAME) {
+    if (config.user) {
       fileConfig.user = config.user;
-    }
-    if (config.supabase && (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY)) {
-      fileConfig.supabase = config.supabase;
     }
     
     if (Object.keys(fileConfig).length > 0) {
@@ -76,30 +77,9 @@ export async function saveConfig(config: Config): Promise<void> {
 }
 
 /**
- * Updates the Supabase configuration (only if not using environment variables)
- * @param {SupabaseConfig} supabaseConfig The Supabase configuration
+ * Gets Supabase configuration from embedded build values
+ * @returns {SupabaseConfig} The Supabase configuration
  */
-export async function updateSupabaseConfig(supabaseConfig: SupabaseConfig): Promise<void> {
-  // Only update config file if not using environment variables
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    const config = await loadConfig();
-    config.supabase = supabaseConfig;
-    await saveConfig(config);
-  }
-}
-
-/**
- * Gets Supabase configuration from environment variables or config file
- * @returns {SupabaseConfig | null} The Supabase configuration
- */
-export function getSupabaseConfig(): SupabaseConfig | null {
-  // Check environment variables first
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
-    return {
-      url: process.env.SUPABASE_URL,
-      anonKey: process.env.SUPABASE_ANON_KEY
-    };
-  }
-  
-  return null;
+export function getSupabaseConfig(): SupabaseConfig {
+  return buildConfig.supabase as SupabaseConfig;
 }

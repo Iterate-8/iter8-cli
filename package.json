@@ -8,13 +8,13 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc && esbuild dist/cli.js --bundle --platform=node --outfile=dist/bundle.js",
+    "build": "npm run clean && tsc && esbuild dist/cli.js --bundle --platform=node --define:process.env.SUPABASE_ANON_KEY='\"`printf %q \"$SUPABASE_ANON_KEY\"`\"' --define:process.env.OPENAI_API_KEY='\"`printf %q \"$OPENAI_API_KEY\"`\"' --outfile=dist/bundle.js",
     "dev": "tsx src/cli.ts",
     "start": "node dist/bundle.js",
     "cli": "tsx src/cli.ts",
-    "pkg:macos": "npm run build && pkg dist/bundle.js --targets node18-macos-x64 --output iter8-cli-macos",
-    "pkg:linux": "npm run build && pkg dist/bundle.js --targets node18-linux-x64 --output iter8-cli-linux",
-    "pkg:win": "npm run build && pkg dist/bundle.js --targets node18-win-x64 --output iter8-cli-win.exe",
+    "pkg:macos": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-macos-x64 --output iter8-cli-macos",
+    "pkg:linux": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-linux-x64 --output iter8-cli-linux",
+    "pkg:win": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-win-x64 --output iter8-cli-win.exe",
     "pkg:all": "npm run pkg:macos && npm run pkg:linux && npm run pkg:win",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -25,15 +25,40 @@ class SupabaseService {
   async initialize(config: SupabaseConfig): Promise<void> {
     try {
       this.config = config;
+      
+      // Validate URL format
+      try {
+        new URL(config.url);
+      } catch (e) {
+        throw new Error('Invalid Supabase URL format');
+      }
+
+      // Validate anon key format (should be a JWT-like string)
+      if (!config.anonKey.includes('.')) {
+        throw new Error('Invalid Supabase anonymous key format');
+      }
+
       this.client = createClient(config.url, config.anonKey);
       
-      // Test the connection with a simple query
-      const { error } = await this.client.from('_dummy_test_').select('*').limit(1);
-      // We expect this to fail, but it will tell us if the connection works
-      if (error && !error.message.includes('does not exist')) {
-        throw new Error(`Failed to connect to Supabase: ${error.message}`);
+      // Test the connection with a simple query to a known public table
+      const { data, error } = await this.client
+        .from('feedback')
+        .select('count')
+        .limit(1);
+
+      if (error) {
+        if (error.message.includes('invalid API key')) {
+          throw new Error('Invalid Supabase API key - please check your configuration');
+        } else if (error.message.includes('does not exist')) {
+          // Table doesn't exist but connection works
+          console.log('Connected to Supabase successfully');
+        } else {
+          throw error;
+        }
       }
     } catch (error) {
+      this.client = null;
+      this.config = null;
       logError(`Failed to initialize Supabase client: ${error}`);
       throw error;
     }
