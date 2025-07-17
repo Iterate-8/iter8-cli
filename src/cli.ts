@@ -10,6 +10,8 @@ import { createTicketsCommand } from './commands/tickets.js';
 import { createDebugCommand } from './commands/debug.js';
 import readline from 'readline';
 import { supabaseService } from './services/supabase.js';
+import { openAIService } from './services/openai.js';
+import { fileManagerService } from './services/fileManager.js';
 
 const program = new Command();
 
@@ -83,13 +85,15 @@ program
     await import('./utils/config.js').then(m => m.saveConfig(config));
   }
 
-  // Initialize Supabase and fetch feedback for this startup
+  // Initialize services and fetch feedback for this startup
   let todos: string[] = [];
   try {
     if (!config.supabase) {
       throw new Error('Supabase not configured');
     }
     await supabaseService.initialize(config.supabase);
+    await openAIService.initialize();
+    await fileManagerService.initialize();
     const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
     todos = feedbackItems;
   } catch (err) {
@@ -113,6 +117,7 @@ program
   console.log(chalk.white('  refresh - Fetch latest feedback'));
   console.log(chalk.white('  change  - Change startup name'));
   console.log(chalk.white('  apply   - Apply feedback as code changes'));
+  console.log(chalk.white('  revert  - Revert applied changes'));
   console.log(chalk.white('  quit    - Exit the application'));
   console.log();
 
@@ -141,8 +146,10 @@ program
         changeStartupName();
       } else if (input === 'apply') {
         applyFeedback();
+      } else if (input === 'revert') {
+        revertChanges();
       } else {
-        console.log(chalk.yellow('Unknown command. Type one of: refresh, change, apply, quit'));
+        console.log(chalk.yellow('Unknown command. Type one of: refresh, change, apply, revert, quit'));
         prompt();
       }
     });
@@ -191,13 +198,15 @@ program
     }
 
     console.log(chalk.blue('📋 Select todos to apply:'));
-    console.log(chalk.gray('(Use space to select, enter to confirm)'));
+    console.log(chalk.gray('(Enter numbers separated by commas, or "all" or "cancel")'));
     console.log();
 
-    // Simple selection interface (since we can't use arrow keys easily in this setup)
+    // Display todos as selectable options
     console.log(chalk.cyan('Available options:'));
+    todos.forEach((todo, idx) => {
+      console.log(chalk.white(`  ${idx + 1}. ${todo}`));
+    });
     console.log(chalk.white('  all - Apply all todos'));
-    console.log(chalk.white('  <numbers> - Apply specific todos (e.g., "1,3,5")'));
     console.log(chalk.white('  cancel - Cancel selection'));
     console.log();
 
@@ -223,27 +232,114 @@ program
     });
   }
 
-  function applySelectedTodos(selectedIndices: number[]) {
-    console.log(chalk.green('🚀 Applying selected todos...'));
+  async function applySelectedTodos(selectedIndices: number[]) {
+    console.log(chalk.green('🚀 Generating code changes for selected todos...'));
     
-    selectedIndices.forEach(index => {
-      const todo = todos[index];
-      console.log(chalk.blue(`Applying: ${todo}`));
+    try {
+      // Generate changes for each selected todo using OpenAI
+      const allChanges: any[] = [];
       
-      // Create a log file to show execution
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] Applied todo #${index + 1}: ${todo}\n`;
+      for (const index of selectedIndices) {
+        const todo = todos[index];
+        console.log(chalk.blue(`Generating changes for: ${todo}`));
+        
+        const generatedChanges = await openAIService.generateCodeChanges(todo);
+        allChanges.push(...generatedChanges.changes);
+      }
       
-      // Write to execution log file
-      import('fs').then(fs => {
-        fs.appendFileSync('execution_log.txt', logEntry);
-      }).catch(err => {
-        console.log(chalk.red('Failed to log execution'));
+      console.log(chalk.green(`✅ Generated ${allChanges.length} code change(s)`));
+      console.log();
+      
+      // Display the generated changes
+      await fileManagerService.displayChanges(allChanges);
+      
+      // Ask for confirmation
+      console.log(chalk.cyan('Do you want to apply these changes?'));
+      console.log(chalk.white('  accept - Apply all changes'));
+      console.log(chalk.white('  deny   - Cancel all changes'));
+      console.log(chalk.white('  modify - Edit changes before applying'));
+      console.log();
+      
+      drawClaudeInputBox();
+      rl.question('', async (response) => {
+        const input = response.trim().toLowerCase();
+        
+        if (input === 'accept') {
+          // Apply the changes
+          console.log(chalk.green('✅ Applying changes to files...'));
+          await fileManagerService.applyChanges(allChanges);
+          
+          // Log the execution
+          const timestamp = new Date().toISOString();
+          selectedIndices.forEach(index => {
+            const todo = todos[index];
+            const logEntry = `[${timestamp}] Applied todo #${index + 1}: ${todo}\n`;
+            import('fs').then(fs => {
+              fs.appendFileSync('execution_log.txt', logEntry);
+            }).catch(err => {
+              console.log(chalk.red('Failed to log execution'));
+            });
+          });
+          
+          console.log(chalk.blue('📝 Actions logged to execution_log.txt'));
+          redisplayTodosAndCommands();
+          
+        } else if (input === 'deny') {
+          console.log(chalk.yellow('❌ Changes cancelled.'));
+          redisplayTodosAndCommands();
+          
+        } else if (input === 'modify') {
+          console.log(chalk.blue('🔧 Modification feature coming soon...'));
+          redisplayTodosAndCommands();
+          
+        } else {
+          console.log(chalk.red('Invalid response. Please enter: accept, deny, or modify'));
+          prompt();
+        }
       });
-    });
+    } catch (error) {
+      console.log(chalk.red('❌ Failed to generate changes:'));
+      logError(error);
+      redisplayTodosAndCommands();
+    }
+  }
+
+
+
+  async function revertChanges() {
+    const backupCount = fileManagerService.getBackupCount();
+    if (backupCount === 0) {
+      console.log(chalk.yellow('No changes to revert.'));
+      prompt();
+      return;
+    }
+
+    console.log(chalk.blue(`🔄 Reverting ${backupCount} change(s)...`));
+    await fileManagerService.revertChanges();
+    redisplayTodosAndCommands();
+  }
+
+  function redisplayTodosAndCommands() {
+    console.log();
+    console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
+    if (todos.length > 0) {
+      todos.forEach((todo, idx) => {
+        console.log(chalk.blueBright(`${idx + 1}. `) + chalk.whiteBright(todo));
+      });
+    } else {
+      console.log(chalk.gray('No feedback found for this startup.'));
+    }
+    console.log();
+
+    // Show commands
+    console.log(chalk.bold.cyan('Commands:'));
+    console.log(chalk.white('  refresh - Fetch latest feedback'));
+    console.log(chalk.white('  change  - Change startup name'));
+    console.log(chalk.white('  apply   - Apply feedback as code changes'));
+    console.log(chalk.white('  revert  - Revert applied changes'));
+    console.log(chalk.white('  quit    - Exit the application'));
+    console.log();
     
-    console.log(chalk.green(`✅ Applied ${selectedIndices.length} todo(s)`));
-    console.log(chalk.blue('📝 Actions logged to execution_log.txt'));
     prompt();
   }
 
