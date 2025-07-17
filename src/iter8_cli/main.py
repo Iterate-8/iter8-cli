@@ -1,8 +1,10 @@
 import click
 from rich.console import Console
 from rich import print as rprint
+# This comment was added by testaddcomment command!
 from .config import Config
-from .commands import chat, config as config_cmd
+from .commands import chat, config as config_cmd, tickets, testcmd, testaddcode, testaddfunction, testaddline, testaddcomment
+print('This is a test print line inserted by testaddcode command!')
 
 console = Console()
 
@@ -32,6 +34,19 @@ def cli(ctx, verbose, config_file, version):
 # Register command groups
 cli.add_command(chat.chat)
 cli.add_command(config_cmd.config)
+cli.add_command(testcmd.testcmd)
+cli.add_command(tickets.tickets)
+cli.add_command(testaddcode.testaddcode)
+cli.add_command(testaddfunction.testaddfunction)
+cli.add_command(testaddline.testaddline)
+cli.add_command(testaddcomment.testaddcomment)
+
+@click.command()
+def hellotest():
+    """A simple test command added directly in main.py."""
+    print("Hello from main.py test command!")
+
+cli.add_command(hellotest)
 
 def main():
     cli(obj={})

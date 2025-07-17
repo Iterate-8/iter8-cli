@@ -1,0 +1,15 @@
+#!/opt/anaconda3/bin/python
+"""
+Wrapper script for iter8 CLI
+"""
+import sys
+import os
+
+# Add the src directory to the Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
+# Import and run the main CLI
+from iter8_cli.main import main
+
+if __name__ == '__main__':
+    main() 

@@ -1,0 +1,7 @@
+id: 1
+title: "Add print statement"
+description: "Insert a print statement in main.py"
+file: "src/iter8_cli/main.py"
+action: "insert"
+line: 5
+content: "print('Hello from ticket 1')" 

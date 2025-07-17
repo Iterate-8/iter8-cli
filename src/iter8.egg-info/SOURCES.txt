@@ -13,6 +13,8 @@ src/iter8_cli/main.py
 src/iter8_cli/commands/__init__.py
 src/iter8_cli/commands/chat.py
 src/iter8_cli/commands/config.py
+src/iter8_cli/commands/testcmd.py
+src/iter8_cli/commands/tickets.py
 src/iter8_cli/utils/__init__.py
 src/iter8_cli/utils/api.py
 src/iter8_cli/utils/output.py
