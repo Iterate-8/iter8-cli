@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import { loadConfig } from './utils/config';
+import { loadConfig, getSupabaseConfig } from './utils/config';
 import { logInfo, logError } from './utils/logger';
 import { readFileSafe, writeFileSafe } from './utils/file';
 import { fetchData } from './utils/http';
@@ -13,6 +14,7 @@ import readline from 'readline';
 import { supabaseService } from './services/supabase';
 import { openAIService } from './services/openai';
 import { fileManagerService } from './services/fileManager';
+import figlet from 'figlet';
 
 const program = new Command();
 
@@ -52,7 +54,7 @@ program
     try {
       const data = await fetchData(url);
       spinner.succeed('Fetched successfully!');
-      logInfo(chalk.blueBright(JSON.stringify(data, null, 2)));
+      logInfo(chalk.blue(JSON.stringify(data, null, 2)));
     } catch (err) {
       spinner.fail('Failed to fetch');
       logError(err);
@@ -60,12 +62,8 @@ program
   });
 
 (async () => {
-  // Display ASCII banner
-  console.log(chalk.magentaBright(`
-  ╔══════════════════════════════════════╗
-  ║             ITER8 CLI                ║
-  ╚══════════════════════════════════════╝
-  `));
+  // Print Figlet banner
+  console.log(chalk.magentaBright(figlet.textSync('Iter8', { horizontalLayout: 'default', verticalLayout: 'default' })));
 
   // Load config and prompt for startup name if not set
   let config = await loadConfig();
@@ -108,10 +106,10 @@ program
 
   // Show the to-do list
   console.log();
-  console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
+  console.log(chalk.bold.blue('TODOS').padEnd(30, ' '));
   if (todos.length > 0) {
     todos.forEach((todo, idx) => {
-      console.log(chalk.blueBright(`${idx + 1}. `) + chalk.whiteBright(todo));
+      console.log(chalk.blue(`${idx + 1}. `) + chalk.white(todo));
     });
   } else {
     console.log(chalk.gray('No feedback found for this startup.'));
@@ -134,7 +132,7 @@ program
     console.log();
     process.stdout.write(chalk.cyan('┌' + '─'.repeat(width) + '┐') + '\n');
     // Input prompt below the line
-    process.stdout.write(chalk.whiteBright('')); // No prefix, just input
+    process.stdout.write(chalk.white('')); // No prefix, just input
   }
 
   function prompt() {
@@ -171,10 +169,10 @@ program
       
       console.log(chalk.green('✅ Feedback refreshed!'));
       console.log();
-      console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
+      console.log(chalk.bold.blue('TODOS').padEnd(30, ' '));
       if (todos.length > 0) {
         todos.forEach((todo, idx) => {
-          console.log(chalk.blueBright(`${idx + 1}. `) + chalk.whiteBright(todo));
+          console.log(chalk.blue(`${idx + 1}. `) + chalk.white(todo));
         });
       } else {
         console.log(chalk.gray('No feedback found for this startup.'));
@@ -329,10 +327,10 @@ program
 
   function redisplayTodosAndCommands() {
     console.log();
-    console.log(chalk.bold.blueBright('TODOS').padEnd(30, ' '));
+    console.log(chalk.bold.blue('TODOS').padEnd(30, ' '));
     if (todos.length > 0) {
       todos.forEach((todo, idx) => {
-        console.log(chalk.blueBright(`${idx + 1}. `) + chalk.whiteBright(todo));
+        console.log(chalk.blue(`${idx + 1}. `) + chalk.white(todo));
       });
     } else {
       console.log(chalk.gray('No feedback found for this startup.'));

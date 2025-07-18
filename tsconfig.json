@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2016",
-    "module": "commonjs",
-    "rootDir": "src",
+    "module": "esnext",
+    "rootDir": ".",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "outDir": "dist",
@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "declaration": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "types"],
   "exclude": ["node_modules"]
 }

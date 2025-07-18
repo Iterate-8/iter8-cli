@@ -7,17 +7,13 @@ const CONFIG_PATH = path.resolve(process.cwd(), 'config.json');
 
 export interface Config {
   user?: string;
-  supabase: SupabaseConfig; // Remove optional since it's always provided
+  supabase: SupabaseConfig;
   openai: {
     apiKey: string;
   };
   production: boolean;
 }
 
-/**
- * Validates that required configuration values are present
- * @throws {Error} if any required values are missing
- */
 function validateConfig(config: Config) {
   if (!config.supabase?.anonKey || config.supabase.anonKey.trim() === '') {
     throw new Error('Supabase anonymous key is missing from the binary. This binary was not built correctly.');
@@ -27,22 +23,15 @@ function validateConfig(config: Config) {
   }
 }
 
-/**
- * Loads the configuration, using embedded build-time values
- * @returns {Promise<Config>} The config object
- */
 export async function loadConfig(): Promise<Config> {
-  // Cast buildConfig to match our Config type since we validate it
   const config: Config = {
     supabase: buildConfig.supabase as SupabaseConfig,
     openai: buildConfig.openai as { apiKey: string },
     production: buildConfig.production as boolean,
   };
 
-  // Validate the embedded config values
   validateConfig(config);
 
-  // Load user from config file if it exists
   try {
     if (await fs.pathExists(CONFIG_PATH)) {
       const fileConfig = await fs.readJson(CONFIG_PATH);
@@ -51,23 +40,17 @@ export async function loadConfig(): Promise<Config> {
       }
     }
   } catch (err) {
-    // Ignore config file errors
+    // ignore
   }
-
   return config;
 }
 
-/**
- * Saves the user configuration to config.json
- * @param {Config} config The config object
- */
 export async function saveConfig(config: Config): Promise<void> {
   try {
     const fileConfig: any = {};
     if (config.user) {
       fileConfig.user = config.user;
     }
-    
     if (Object.keys(fileConfig).length > 0) {
       await fs.writeJson(CONFIG_PATH, fileConfig, { spaces: 2 });
     }
@@ -76,10 +59,6 @@ export async function saveConfig(config: Config): Promise<void> {
   }
 }
 
-/**
- * Gets Supabase configuration from embedded build values
- * @returns {SupabaseConfig} The Supabase configuration
- */
 export function getSupabaseConfig(): SupabaseConfig {
   return buildConfig.supabase as SupabaseConfig;
 }

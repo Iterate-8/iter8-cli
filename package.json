@@ -2,14 +2,14 @@
   "name": "iter8-cli",
   "version": "1.0.0",
   "description": "CLI Tool for Iter8 customers - Get personalized feedback and apply code changes",
-  "main": "dist/cli.js",
+  "main": "dist/bundle.js",
   "bin": {
-    "iter8": "./dist/cli.js"
+    "iter8": "./dist/bundle.js"
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc && esbuild dist/cli.js --bundle --platform=node --define:process.env.SUPABASE_ANON_KEY='\"`printf %q \"$SUPABASE_ANON_KEY\"`\"' --define:process.env.OPENAI_API_KEY='\"`printf %q \"$OPENAI_API_KEY\"`\"' --outfile=dist/bundle.js",
-    "dev": "tsx src/cli.ts",
+    "build": "npm run clean && tsc && esbuild src/cli.tsx --bundle --platform=node --format=esm --external:react-devtools-core --define:process.env.SUPABASE_ANON_KEY='\"$SUPABASE_ANON_KEY\"' --define:process.env.OPENAI_API_KEY='\"$OPENAI_API_KEY\"' --outfile=dist/bundle.js",
+    "dev": "tsx src/cli.tsx",
     "start": "node dist/bundle.js",
     "cli": "tsx src/cli.ts",
     "pkg:macos": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-macos-x64 --output iter8-cli-macos",
@@ -31,7 +31,13 @@
     ],
     "outputPath": "dist"
   },
-  "keywords": ["cli", "feedback", "startup", "iter8", "productivity"],
+  "keywords": [
+    "cli",
+    "feedback",
+    "startup",
+    "iter8",
+    "productivity"
+  ],
   "author": "Iterate-8",
   "license": "MIT",
   "dependencies": {
@@ -46,6 +52,7 @@
     "fs-extra": "^11.3.0",
     "glob": "^10.3.10",
     "ink": "^5.2.1",
+    "ink-text-input": "^6.0.0",
     "openai": "^4.20.1",
     "ora": "^5.4.1",
     "react": "^18.3.1",
@@ -53,10 +60,12 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "@types/chalk": "^0.4.31",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
     "esbuild": "^0.19.11",
     "pkg": "^5.8.1",
     "tsx": "^4.20.3"
-  }
+  },
+  "type": "module"
 }

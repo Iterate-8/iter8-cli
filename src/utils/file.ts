@@ -1,9 +1,5 @@
 import fs from 'fs-extra';
 
-/**
- * Reads a file safely, returning its contents or undefined if not found.
- * @param path Path to the file
- */
 export async function readFileSafe(path: string): Promise<string | undefined> {
   try {
     if (await fs.pathExists(path)) {
@@ -15,11 +11,6 @@ export async function readFileSafe(path: string): Promise<string | undefined> {
   }
 }
 
-/**
- * Writes data to a file safely.
- * @param path Path to the file
- * @param data Data to write
- */
 export async function writeFileSafe(path: string, data: string): Promise<void> {
   try {
     await fs.outputFile(path, data);
