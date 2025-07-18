@@ -1,13 +1,8 @@
-# iter8-cli v1.0.2 - Fixed OpenAI Integration
+# iter8-cli v1.0.1 - Self-Contained Release
 
 ## 🚀 What's New
 
-This release fixes the OpenAI API key issue and ensures all functionality works correctly.
-
-### 🐛 Bug Fixes
-- **Fixed OpenAI API Key**: Updated to use a valid OpenAI API key
-- **Fixed 401 Errors**: No more "Incorrect API key provided" errors
-- **Improved Code Generation**: AI-powered code changes now work perfectly
+This release makes iter8-cli completely self-contained with embedded configuration. No setup required!
 
 ### ✨ Features
 - **Zero Configuration**: Download and run - no environment variables needed
@@ -55,12 +50,17 @@ All API keys are embedded during build time and are not exposed to end users. Th
    - `change` - Change startup name
    - `quit` - Exit
 
+## 🐛 Bug Fixes
+- Fixed "Supabase not configured" errors
+- Fixed OpenAI API key not found errors
+- Improved binary packaging and distribution
+
 ## 📊 File Checksums (SHA256)
 
 ```
-32fbc9a5bfa295155031b9c38f9049703d1615d7699d0326144d2fd2fed04814  iter8-cli-linux
-b764a062cb13a71f16acf645d6abc01a8b731a8df944e5f7dfadef82794b1672  iter8-cli-macos
-9253d5ce7f6392354260695db291d144669e5bd958b1b24a034db1f5909019cc  iter8-cli-win.exe
+8772db9e5cf70c612257e1044a62e950df0b64321332efce33f4648d4e2e286d  iter8-cli-linux
+0be11487fca7dd94166f18ec7f233d4cb512a611494ed60fd36f06afe757fcf5  iter8-cli-macos
+268ba30793b49555f29433e27eb7256afb2e7fb5bc34a19a63c77ce5a874cc62  iter8-cli-win.exe
 ```
 
 ## 🔄 What's Next

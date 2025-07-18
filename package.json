@@ -1,6 +1,6 @@
 {
   "name": "iter8-cli",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "CLI Tool for Iter8 customers - Get personalized feedback and apply code changes",
   "main": "dist/cli.js",
   "bin": {
