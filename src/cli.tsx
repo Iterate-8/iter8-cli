@@ -126,7 +126,7 @@ const App: React.FC = () => {
 
   // Handle input submit
   const handleSubmit = async (val: string) => {
-    const inputVal = val.trim().toLowerCase();
+    const inputVal = val.trim(); // Do not lowercase, preserve user case
     setInput('');
     setMessage('');
     if (mode === 'startup') {
@@ -140,23 +140,24 @@ const App: React.FC = () => {
       return;
     }
     if (mode === 'command') {
-      if (inputVal === 'quit') {
+      const command = inputVal.toLowerCase();
+      if (command === 'quit') {
         setMessage(chalk.green('Goodbye!'));
         setTimeout(() => exit(), 500);
-      } else if (inputVal === 'refresh') {
+      } else if (command === 'refresh') {
         setMessage(chalk.blue('🔄 Fetching latest feedback...'));
         if (startupName) {
           const feedbackItems = await supabaseService.getFeedbackByStartupName(startupName);
           setTodos(feedbackItems);
         }
         setMessage(chalk.green('✅ Feedback refreshed!'));
-      } else if (inputVal === 'change') {
+      } else if (command === 'change') {
         setMode('startup');
-      } else if (inputVal === 'apply') {
+      } else if (command === 'apply') {
         setMode('apply');
         setMessage(chalk.yellow('Apply feature coming soon (see CLI for full flow).'));
         setTimeout(() => setMode('command'), 1500);
-      } else if (inputVal === 'revert') {
+      } else if (command === 'revert') {
         setMessage(chalk.yellow('Revert feature coming soon (see CLI for full flow).'));
         setTimeout(() => setMode('command'), 1500);
       } else {

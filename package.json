@@ -12,10 +12,6 @@
     "dev": "tsx src/cli.tsx",
     "start": "node dist/bundle.js",
     "cli": "tsx src/cli.ts",
-    "pkg:macos": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-macos-x64 --output iter8-cli-macos",
-    "pkg:linux": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-linux-x64 --output iter8-cli-linux",
-    "pkg:win": "ITER8_PRODUCTION=true npm run build && pkg dist/bundle.js --targets node18-win-x64 --output iter8-cli-win.exe",
-    "pkg:all": "npm run pkg:macos && npm run pkg:linux && npm run pkg:win",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "pkg": {
