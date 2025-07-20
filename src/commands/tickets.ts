@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import { loadConfig, getSupabaseConfig } from '../utils/config';
-import { logInfo, logError } from '../utils/logger';
+import { loadConfig, getSupabaseConfig } from '../utils/config.js';
+import { logInfo, logError } from '../utils/logger.js';
 import { supabaseService, Ticket } from '../services/supabase.js';
 
 export function createTicketsCommand(): Command {

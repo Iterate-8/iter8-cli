@@ -20,5 +20,9 @@ export const buildConfig = {
   openai: {
     apiKey: requiredEnvVars.OPENAI_API_KEY as string,
   },
+  ollama: {
+    apiUrl: 'http://127.0.0.1:11434/api/generate',
+    model: 'llama3.2:latest', // Default model, can be overridden
+  },
   production: true,
 };

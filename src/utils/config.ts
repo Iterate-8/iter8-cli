@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { SupabaseConfig } from '../services/supabase';
-import { buildConfig } from '../config/buildConfig';
+import { SupabaseConfig } from '../services/supabase.js';
+import { buildConfig } from '../config/buildConfig.js';
 
 const CONFIG_PATH = path.resolve(process.cwd(), 'config.json');
 
