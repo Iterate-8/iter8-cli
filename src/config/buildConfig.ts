@@ -22,7 +22,7 @@ export const buildConfig = {
   },
   ollama: {
     apiUrl: 'http://127.0.0.1:11434/api/generate',
-    model: 'llama3.2:latest', // Default model, can be overridden
+    model: 'qwen2.5-coder:7b', // Default model, can be overridden
   },
   production: true,
 };

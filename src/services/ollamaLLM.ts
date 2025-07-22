@@ -25,7 +25,7 @@ class OllamaLLMService {
   constructor() {
     // Default to Ollama local server
     this.apiUrl = buildConfig.ollama?.apiUrl || 'http://localhost:11434/api/generate';
-    this.model = buildConfig.ollama?.model || 'llama3.2:latest'; // e.g., 'qwen:latest' or 'qwen1.5-code:latest'
+    this.model = buildConfig.ollama?.model || 'qwen2.5-coder:7b'; // e.g., 'qwen:latest' or 'qwen1.5-code:latest'
   }
 
   async generateCodeChanges(feedback: string): Promise<GeneratedChanges> {
@@ -38,15 +38,16 @@ ${feedback}
 """
 
 Your task:
-1. Propose specific file changes with correct file paths (relative to the project root).
-2. For each file, provide the full, correct, and readable code content that should be written to that file. Use clear formatting, proper indentation, and include all necessary imports and context for the code to work.
-3. For each change, add a concise, descriptive explanation of what the change does and why.
+1. For each feedback item, determine which existing file(s) in the project should be updated. Only create a new file if the required functionality does not fit into any existing file.
+2. If a file already exists, update or refactor the existing code in-place. Do not create duplicate files or unnecessary new files.
+3. For each change, provide the full, updated file content (not just the diff), and a concise, descriptive explanation of what the change does and why.
+4. Use clear formatting, proper indentation, and include all necessary imports and context for the code to work. Add comments and use descriptive names.
+5. Code must be correct, idiomatic, and easy to read. Use best practices for TypeScript/JavaScript/React/Node.js as appropriate.
+6. Do not generate placeholder or incomplete code. Only output code that could be copy-pasted into a real project and work as described.
+7. If the feedback requires UI or logic changes, update the relevant React/TypeScript files in-place.
+8. If the feedback is vague, make reasonable, practical improvements that would benefit a real project.
 
 IMPORTANT:
-- Code must be correct, idiomatic, and easy to read. Use best practices for TypeScript/JavaScript/React/Node.js as appropriate.
-- Do not generate placeholder or incomplete code. Only output code that could be copy-pasted into a real project and work as described.
-- Use descriptive variable and function names, and add comments where helpful for clarity.
-- If the feedback is vague, make reasonable, practical improvements that would benefit a real project.
 - ONLY output a single JSON object, no markdown, no explanations, no extra text.
 - The output MUST be valid JSON matching this structure:
 {
@@ -81,19 +82,27 @@ IMPORTANT:
       if (!response) throw new Error('No response from LLM');
       // Try to extract JSON if extra text is present
       let parsed: any;
-      // Try to parse after trimming whitespace
+      // Try to parse after normalizing quotes and trimming whitespace
       try {
-        parsed = JSON.parse(response.trim());
+        let clean = response.trim()
+          .replace(/[“”]/g, '"') // smart double quotes
+          .replace(/[‘’]/g, "'") // smart single quotes
+          .replace(/^\uFEFF/, ''); // remove BOM if present
+        parsed = JSON.parse(clean);
       } catch (parseError) {
         // Try to extract JSON block from the response
         const match = response.match(/\{[\s\S]*\}/);
         let jsonStr = match ? match[0] : response;
-        jsonStr = jsonStr.trim();
+        jsonStr = jsonStr.trim()
+          .replace(/[“”]/g, '"')
+          .replace(/[‘’]/g, "'")
+          .replace(/^\uFEFF/, '');
         // Remove trailing commas before } or ]
         jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
         try {
           parsed = JSON.parse(jsonStr);
         } catch (e) {
+          logError('LLM output could not be parsed as JSON. Raw output: ' + response);
           throw new Error('LLM output could not be parsed as JSON. Raw output: ' + response);
         }
       }
