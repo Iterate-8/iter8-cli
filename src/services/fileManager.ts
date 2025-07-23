@@ -118,6 +118,18 @@ class FileManagerService {
       console.log();
     }
   }
+
+  // Public method to read a file's contents
+  public async readFile(filePath: string): Promise<string> {
+    return await fs.readFile(filePath, 'utf8');
+  }
+
+  // Public method to write content to a file (ensures directory exists)
+  public async writeFile(filePath: string, content: string): Promise<void> {
+    const dir = path.dirname(filePath);
+    await fs.ensureDir(dir);
+    await fs.writeFile(filePath, content, 'utf8');
+  }
 }
 
 export const fileManagerService = new FileManagerService(); 

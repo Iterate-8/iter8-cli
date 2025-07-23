@@ -37,6 +37,8 @@
   "author": "Iterate-8",
   "license": "MIT",
   "dependencies": {
+    "@langchain/community": "^0.3.49",
+    "@langchain/ollama": "^0.2.3",
     "@supabase/supabase-js": "^2.39.0",
     "@types/figlet": "^1.7.0",
     "@types/node": "^24.0.14",
@@ -49,6 +51,7 @@
     "glob": "^10.3.10",
     "ink": "^5.2.1",
     "ink-text-input": "^6.0.0",
+    "langchain": "^0.3.30",
     "node-fetch": "^3.3.2",
     "openai": "^4.20.1",
     "ora": "^5.4.1",
